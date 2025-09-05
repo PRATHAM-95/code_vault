@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BurgerCraft - Premium Food Ordering</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-hamburger"></i>
+                    <span>BurgerCraft</span>
+                </div>
+                <nav class="nav">
+                    <a href="#menu" class="nav-link">Menu</a>
+                    <a href="#orders" class="nav-link">Orders</a>
+                    <a href="#contact" class="nav-link">Contact</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero">
+                <h1 class="hero-title">Craft Your Perfect Burger</h1>
+                <p class="hero-subtitle">Premium ingredients, artisanal preparation, delivered fresh to your door</p>
+            </section>
+
+            <!-- Order Form Section -->
+            <section class="order-section" id="menu">
+                <div class="section-header">
+                    <h2 class="section-title">Place Your Order</h2>
+                    <p class="section-subtitle">Select your favorite burger and customize your order</p>
+                </div>
+
+                <form class="order-form" id="orderForm">
+                    <!-- Customer Information -->
+                    <div class="form-group">
+                        <h3 class="form-section-title">Customer Information</h3>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="customerName" class="label">Full Name</label>
+                                <input type="text" id="customerName" name="customerName" class="input" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="phoneNumber" class="label">Phone Number</label>
+                                <input type="tel" id="phoneNumber" name="phoneNumber" class="input" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Burger Selection -->
+                    <div class="form-group">
+                        <h3 class="form-section-title">Choose Your Burger</h3>
+                        <div class="burger-grid">
+                            <div class="burger-card">
+                                <input type="radio" id="classic" name="hamburgerType" value="Classic Beef Burger" class="burger-radio" required>
+                                <label for="classic" class="burger-label">
+                                    <div class="burger-icon">🍔</div>
+                                    <h4 class="burger-name">Classic Beef</h4>
+                                    <p class="burger-description">Juicy beef patty with lettuce, tomato, and special sauce</p>
+                                    <span class="burger-price">$12.99</span>
+                                </label>
+                            </div>
+                            
+                            <div class="burger-card">
+                                <input type="radio" id="chicken" name="hamburgerType" value="Grilled Chicken Burger" class="burger-radio">
+                                <label for="chicken" class="burger-label">
+                                    <div class="burger-icon">🍗</div>
+                                    <h4 class="burger-name">Grilled Chicken</h4>
+                                    <p class="burger-description">Tender grilled chicken breast with avocado and herbs</p>
+                                    <span class="burger-price">$11.99</span>
+                                </label>
+                            </div>
+                            
+                            <div class="burger-card">
+                                <input type="radio" id="veggie" name="hamburgerType" value="Plant-Based Veggie Burger" class="burger-radio">
+                                <label for="veggie" class="burger-label">
+                                    <div class="burger-icon">🥬</div>
+                                    <h4 class="burger-name">Plant-Based</h4>
+                                    <p class="burger-description">House-made veggie patty with fresh vegetables</p>
+                                    <span class="burger-price">$10.99</span>
+                                </label>
+                            </div>
+                            
+                            <div class="burger-card">
+                                <input type="radio" id="deluxe" name="hamburgerType" value="Deluxe BBQ Burger" class="burger-radio">
+                                <label for="deluxe" class="burger-label">
+                                    <div class="burger-icon">🔥</div>
+                                    <h4 class="burger-name">Deluxe BBQ</h4>
+                                    <p class="burger-description">Premium beef with BBQ sauce, bacon, and onion rings</p>
+                                    <span class="burger-price">$15.99</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quantity and Extras -->
+                    <div class="form-group">
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="quantity" class="label">Quantity</label>
+                                <select id="quantity" name="quantity" class="select">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="specialInstructions" class="label">Special Instructions</label>
+                                <textarea id="specialInstructions" name="specialInstructions" class="textarea" placeholder="Any special requests..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-shopping-cart"></i>
+                        Review Order
+                    </button>
+                </form>
+            </section>
+
+            <!-- Orders Display Section -->
+            <section class="orders-section" id="orders">
+                <div class="section-header">
+                    <h2 class="section-title">Order History</h2>
+                    <p class="section-subtitle">Track your previous and current orders</p>
+                </div>
+                
+                <div class="orders-container">
+                    <div class="orders-table-wrapper">
+                        <table class="orders-table" id="ordersTable">
+                            <thead>
+                                <tr>
+                                    <th>Customer Name</th>
+                                    <th>Phone Number</th>
+                                    <th>Hamburger Type</th>
+                                    <th>Quantity</th>
+                                    <th>Special Instructions</th>
+                                    <th>Status</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <!-- Orders will be populated here -->
+                            </tbody>
+                        </table>
+                        
+                        <div class="empty-state" id="emptyState">
+                            <i class="fas fa-receipt"></i>
+                            <h3>No Orders Yet</h3>
+                            <p>Your order history will appear here once you place your first order.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmationModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-check-circle"></i>
+                    Confirm Your Order
+                </h3>
+                <button class="modal-close" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="order-summary">
+                    <h4 class="summary-title">Order Details</h4>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <span class="summary-label">Customer:</span>
+                            <span class="summary-value" id="confirmName"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Phone:</span>
+                            <span class="summary-value" id="confirmPhone"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Burger Type:</span>
+                            <span class="summary-value" id="confirmBurger"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Quantity:</span>
+                            <span class="summary-value" id="confirmQuantity"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Special Instructions:</span>
+                            <span class="summary-value" id="confirmInstructions"></span>
+                        </div>
+                        <div class="summary-item total">
+                            <span class="summary-label">Total Amount:</span>
+                            <span class="summary-value" id="confirmTotal"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="editOrder">
+                    <i class="fas fa-edit"></i>
+                    Edit Order
+                </button>
+                <button class="btn btn-primary" id="confirmOrder">
+                    <i class="fas fa-check"></i>
+                    Confirm Order
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal success-modal">
+            <div class="modal-body text-center">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="success-title">Order Placed Successfully!</h3>
+                <p class="success-message">Thank you for your order. We'll prepare your delicious burger and have it ready soon!</p>
+                <div class="order-number">
+                    <span>Order #<span id="orderNumber"></span></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="closeSuccessModal">
+                    <i class="fas fa-home"></i>
+                    Continue Ordering
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
