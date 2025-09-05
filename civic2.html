@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicConnect - Interactive Civic Engagement Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <style>
+        :root {
+            --primary-bg: #f0f4f8;
+            /* Light grayish blue */
+            --secondary-bg: #ffffff;
+            --accent-color: #4c51bf;
+            /* Indigo */
+            --accent-hover: #434190;
+            --text-primary: #1a202c;
+            /* Dark gray */
+            --text-secondary: #4a5568;
+            /* Medium gray */
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 45vh;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 0.5rem;
+        }
+
+        #reports-sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-700">
+
+    <header class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <nav class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-city text-2xl text-indigo-600"></i>
+                    <span class="text-xl font-bold text-slate-800">CivicConnect</span>
+                </div>
+                <ul id="nav-links" class="hidden md:flex items-center space-x-8">
+                    <li><a href="#features"
+                            class="font-medium text-slate-600 hover:text-indigo-600 transition">Features</a></li>
+                    <li><a href="#dashboard"
+                            class="font-medium text-slate-600 hover:text-indigo-600 transition">Dashboard</a></li>
+                    <li><a href="#map" class="font-medium text-slate-600 hover:text-indigo-600 transition">Map</a></li>
+                    <li><a href="#contact"
+                            class="font-medium text-slate-600 hover:text-indigo-600 transition">Contact</a></li>
+                </ul>
+                <div class="flex items-center gap-4">
+                    <button id="view-reports-btn"
+                        class="bg-indigo-100 text-indigo-600 font-semibold px-5 py-2.5 rounded-full hover:bg-indigo-200 transition shadow-sm hover:shadow-md hover:-translate-y-0.5 flex items-center gap-2">
+                        <i class="fas fa-list-check"></i> View Reports
+                    </button>
+                    <button id="report-btn"
+                        class="bg-teal-500 text-white font-semibold px-5 py-2.5 rounded-full hover:bg-teal-600 transition shadow-sm hover:shadow-md hover:-translate-y-0.5">Report
+                        Issue</button>
+                    <button id="mobile-menu-btn" class="md:hidden text-2xl text-slate-700">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </nav>
+            <div id="mobile-menu" class="hidden md:hidden mt-4">
+                <ul class="flex flex-col space-y-4">
+                    <li><a href="#features"
+                            class="block font-medium text-slate-600 hover:text-indigo-600 transition">Features</a></li>
+                    <li><a href="#dashboard"
+                            class="block font-medium text-slate-600 hover:text-indigo-600 transition">Dashboard</a></li>
+                    <li><a href="#map" class="block font-medium text-slate-600 hover:text-indigo-600 transition">Map</a>
+                    </li>
+                    <li><a href="#contact"
+                            class="block font-medium text-slate-600 hover:text-indigo-600 transition">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="relative bg-indigo-700 text-white text-center py-24 md:py-32 px-6">
+            <div class="absolute inset-0 bg-cover bg-center opacity-10"
+                style="background-image: url('https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&q=80&w=1600');">
+            </div>
+            <div class="relative z-10">
+                <h1 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">Your Voice, Your Community,
+                    Amplified.</h1>
+                <p class="max-w-3xl mx-auto text-lg md:text-xl text-indigo-200 mb-8">An AI-powered platform to report
+                    civic issues, track progress in real-time, and collaborate for a better, more responsive city.</p>
+                <button id="hero-report-btn"
+                    class="bg-teal-500 text-white font-bold px-8 py-3 rounded-full hover:bg-teal-600 transition-transform hover:scale-105 shadow-lg">Make
+                    a Difference Now</button>
+            </div>
+        </section>
+
+        <section id="features" class="py-20 md:py-28 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">A Smarter Approach to Civic
+                        Engagement</h2>
+                    <p class="text-lg text-slate-600">Our platform uses technology to bridge the gap between citizens
+                        and local government, ensuring every voice is heard and every issue is addressed efficiently.
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div
+                        class="bg-slate-50 p-8 rounded-lg text-center border border-slate-200 hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                        <i class="fas fa-robot text-4xl text-indigo-600 mb-4"></i>
+                        <h3 class="text-xl font-semibold text-slate-800 mb-2">AI-Powered Analysis</h3>
+                        <p>Our system intelligently categorizes reports, identifies trends, and routes issues to the
+                            correct department automatically.</p>
+                    </div>
+                    <div
+                        class="bg-slate-50 p-8 rounded-lg text-center border border-slate-200 hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                        <i class="fas fa-chart-line text-4xl text-indigo-600 mb-4"></i>
+                        <h3 class="text-xl font-semibold text-slate-800 mb-2">Interactive Dashboard</h3>
+                        <p>Visualize community data, track resolution times, and monitor performance with our dynamic
+                            analytics dashboard.</p>
+                    </div>
+                    <div
+                        class="bg-slate-50 p-8 rounded-lg text-center border border-slate-200 hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                        <i class="fas fa-bullhorn text-4xl text-indigo-600 mb-4"></i>
+                        <h3 class="text-xl font-semibold text-slate-800 mb-2">Transparent Tracking</h3>
+                        <p>Receive real-time status updates from submission to resolution. Know exactly where your
+                            report stands at all times.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="dashboard" class="py-20 md:py-28">
+            <div class="container mx-auto px-6">
+                <div class="text-center max-w-3xl mx-auto mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">CivicConnect Interactive Dashboard
+                    </h2>
+                    <p class="text-lg text-slate-600">This dashboard provides a real-time, interactive overview of civic
+                        engagement across the city. Use the filters to explore data on different issue types and
+                        timeframes, helping to identify trends and understand community needs more deeply.</p>
+                </div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-slate-200">
+                    <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+                        <h3 class="text-2xl font-bold text-slate-800">Community Insights</h3>
+                        <div class="flex items-center gap-4">
+                            <label for="timeframeFilter" class="font-semibold">Timeframe:</label>
+                            <select id="timeframeFilter"
+                                class="bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                <option value="30">Last 30 Days</option>
+                                <option value="90">Last 90 Days</option>
+                                <option value="180" selected>Last 6 Months</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                        <div class="bg-slate-50/50 p-4 sm:p-6 rounded-xl border border-slate-200">
+                            <h4 class="text-xl font-semibold text-slate-700 mb-4 text-center">Issues by Category</h4>
+                            <div class="chart-container">
+                                <canvas id="issuesByCategoryChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                            <div class="bg-slate-50/50 p-4 sm:p-6 rounded-xl border border-slate-200">
+                                <h4 class="text-xl font-semibold text-slate-700 mb-4 text-center">Issue Status</h4>
+                                <div class="chart-container h-64 !max-h-[30vh] sm:h-auto sm:!max-h-[45vh]">
+                                    <canvas id="issueStatusChart"></canvas>
+                                </div>
+                            </div>
+                            <div
+                                class="bg-white p-6 rounded-xl shadow-lg border border-slate-200 flex flex-col justify-center text-center">
+                                <div class="mb-4">
+                                    <p class="text-slate-500 text-sm">Avg. Response Time</p>
+                                    <p id="avgResponseTime" class="text-4xl font-bold text-indigo-600">32h</p>
+                                </div>
+                                <div>
+                                    <p class="text-slate-500 text-sm">Satisfaction Rate</p>
+                                    <p id="satisfactionRate" class="text-4xl font-bold text-green-600">92%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 bg-slate-50/50 p-4 sm:p-6 rounded-xl border border-slate-200">
+                        <h4 class="text-xl font-semibold text-slate-700 mb-4 text-center">Monthly Report Trends</h4>
+                        <div class="chart-container">
+                            <canvas id="monthlyTrendsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-8 bg-slate-50/50 p-4 sm:p-6 rounded-xl border border-slate-200">
+                        <h4 class="text-xl font-semibold text-slate-700 mb-4 text-center">✨ AI-Powered Insights</h4>
+                        <p class="text-center text-slate-600 mb-4">Select an issue category to get innovative solution
+                            ideas from Gemini.</p>
+                        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
+                            <select id="solution-category-select"
+                                class="bg-white border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none w-full sm:w-auto">
+                                <option value="Potholes">Potholes</option>
+                                <option value="Streetlight Issues">Streetlight Issues</option>
+                                <option value="Graffiti">Graffiti</option>
+                                <option value="Garbage Collection">Garbage Collection</option>
+                                <option value="Parks & Recreation">Parks & Recreation</option>
+                            </select>
+                            <button id="suggest-solutions-btn"
+                                class="bg-indigo-600 text-white font-semibold px-5 py-2.5 rounded-full hover:bg-indigo-700 transition w-full sm:w-auto flex items-center justify-center gap-2">
+                                Generate Solution Ideas
+                            </button>
+                        </div>
+                        <div id="solution-output-container"
+                            class="mt-4 bg-white p-4 rounded-lg border border-slate-200 min-h-[100px] hidden">
+                            <div id="solution-loader" class="text-center hidden">
+                                <i class="fas fa-spinner fa-spin text-indigo-600 text-2xl"></i>
+                                <p class="mt-2 text-slate-500">Generating ideas...</p>
+                            </div>
+                            <div id="solution-output" class="prose max-w-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="issues-map" id="map">
+            <div class="container mx-auto px-6 py-20 md:py-28">
+                <div class="section-title text-center max-w-3xl mx-auto mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">Live Issues Map</h2>
+                    <p class="text-lg text-slate-600">Explore a real-time map of reported issues across the city. Click
+                        on any marker to see more details about the report, including its category and current status.
+                        This geographic view helps visualize hotspots and understand neighborhood-specific needs.</p>
+                </div>
+                <div id="leaflet-map" class="h-[500px] rounded-2xl shadow-lg border-4 border-white overflow-hidden">
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-indigo-700">
+            <div class="container mx-auto px-6 py-20 text-white text-center">
+                <h2 class="text-3xl font-bold mb-4">Ready to Make a Difference?</h2>
+                <p class="max-w-xl mx-auto mb-8 text-indigo-200">Join thousands of engaged citizens. Report an issue now
+                    and be part of the solution for a better community.</p>
+                <button id="cta-report-btn"
+                    class="bg-teal-500 text-white font-bold px-8 py-3 rounded-full hover:bg-teal-600 transition-transform hover:scale-105 shadow-lg">Report
+                    an Issue Now</button>
+            </div>
+        </section>
+    </main>
+
+    <footer id="contact" class="bg-slate-800 text-slate-300">
+        <div class="container mx-auto px-6 py-16">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div class="md:col-span-1">
+                    <h3 class="text-lg font-semibold text-white mb-4">CivicConnect</h3>
+                    <p class="text-sm">Empowering communities through technology and collaboration.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#features" class="hover:text-teal-400">Features</a></li>
+                        <li><a href="#dashboard" class="hover:text-teal-400">Dashboard</a></li>
+                        <li><a href="#map" class="hover:text-teal-400">Issues Map</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4">Resources</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-teal-400">Help Center</a></li>
+                        <li><a href="#" class="hover:text-teal-400">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-teal-400">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4">Contact</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><i class="fas fa-envelope mr-2"></i> support@civicconnect.com</li>
+                        <li><i class="fas fa-phone mr-2"></i> (555) 123-4567</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-slate-700 pt-8 text-center text-sm text-slate-400">
+                <p>&copy; 2024 CivicConnect. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Report Issue Modal -->
+    <div id="report-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg p-8 relative overflow-y-auto max-h-[90vh]">
+            <button id="close-modal"
+                class="absolute top-4 right-4 text-2xl text-slate-400 hover:text-slate-600">&times;</button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">Report a Civic Issue</h2>
+            <form id="issue-form">
+                <div class="space-y-4">
+                    <div>
+                        <label for="user-name" class="block text-sm font-medium text-slate-600 mb-1">Full Name</label>
+                        <input type="text" id="user-name"
+                            class="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            placeholder="e.g., Jane Doe" required>
+                    </div>
+                    <div>
+                        <label for="user-phone" class="block text-sm font-medium text-slate-600 mb-1">Phone
+                            Number</label>
+                        <input type="tel" id="user-phone"
+                            class="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            placeholder="e.g., (555) 123-4567" required>
+                    </div>
+                    <div>
+                        <label for="issue-image" class="block text-sm font-medium text-slate-600 mb-1">Upload Image
+                            (Optional)</label>
+                        <div
+                            class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-md">
+                            <div class="space-y-1 text-center">
+                                <i class="fas fa-camera text-4xl text-slate-400"></i>
+                                <div class="flex text-sm text-slate-600">
+                                    <label for="issue-image-input"
+                                        class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                        <span>Upload a file</span>
+                                        <input id="issue-image-input" name="issue-image" type="file" class="sr-only"
+                                            accept="image/*">
+                                    </label>
+                                    <p class="pl-1">or drag and drop</p>
+                                </div>
+                                <p class="text-xs text-slate-500">PNG, JPG up to 10MB</p>
+                            </div>
+                        </div>
+                        <div id="image-preview-container" class="mt-2 text-center hidden">
+                            <img id="image-preview" src="" alt="Image preview"
+                                class="max-h-40 mx-auto rounded-md shadow-sm" />
+                            <button type="button" id="analyze-image-btn"
+                                class="mt-2 bg-teal-500 text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-teal-600 transition flex items-center justify-center gap-2 w-full">✨
+                                Analyze Image to Autofill</button>
+                            <div id="analyze-loader" class="text-center mt-2 hidden">
+                                <i class="fas fa-spinner fa-spin text-teal-600 text-2xl"></i>
+                                <p class="mt-2 text-slate-500">Analyzing image...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="issue-title" class="block text-sm font-medium text-slate-600 mb-1">Issue
+                            Title</label>
+                        <input type="text" id="issue-title"
+                            class="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            placeholder="e.g., Large pothole on Main Street" required>
+                    </div>
+                    <div>
+                        <label for="issue-category"
+                            class="block text-sm font-medium text-slate-600 mb-1">Category</label>
+                        <select id="issue-category"
+                            class="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white"
+                            required>
+                            <option value="">Select a category</option>
+                            <option value="Pothole">Pothole</option>
+                            <option value="Streetlight">Streetlight Issue</option>
+                            <option value="Graffiti">Graffiti</option>
+                            <option value="Garbage">Garbage Collection</option>
+                            <option value="Parks">Parks & Recreation</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="issue-description"
+                            class="block text-sm font-medium text-slate-600 mb-1">Description</label>
+                        <div class="relative">
+                            <textarea id="issue-description" rows="4"
+                                class="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                placeholder="Provide details about the issue..." required></textarea>
+                            <button type="button" id="enhance-description-btn"
+                                class="absolute bottom-2 right-2 bg-indigo-100 text-indigo-700 text-xs font-semibold px-2 py-1 rounded-full hover:bg-indigo-200 transition flex items-center gap-1">
+                                ✨ Enhance
+                            </button>
+                            <div id="enhance-loader"
+                                class="absolute bottom-2 right-2 bg-indigo-100 px-3 py-1 rounded-full hidden">
+                                <i class="fas fa-spinner fa-spin text-indigo-700"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex items-center justify-between">
+                    <button type="submit"
+                        class="bg-indigo-600 text-white font-semibold px-6 py-2.5 rounded-full hover:bg-indigo-700 transition w-full">Submit
+                        Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Submission Confirmation Modal -->
+    <div id="confirmation-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-md p-8 text-center">
+            <i class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Report Submitted!</h2>
+            <p class="text-slate-600 mb-6">Thank you, <span id="conf-user-name" class="font-semibold"></span>. Your
+                report has been received and is now being processed.</p>
+            <div class="bg-slate-50 rounded-lg p-4 text-left text-sm space-y-2 mb-6">
+                <p><strong>Title:</strong> <span id="conf-issue-title"></span></p>
+                <p><strong>Category:</strong> <span id="conf-issue-category"></span></p>
+                <p><strong>Phone:</strong> <span id="conf-user-phone"></span></p>
+            </div>
+            <button id="close-confirmation-modal"
+                class="bg-indigo-600 text-white font-semibold px-6 py-2.5 rounded-full hover:bg-indigo-700 transition w-full">Close</button>
+        </div>
+    </div>
+
+    <!-- Reports Sidebar -->
+    <div id="reports-sidebar"
+        class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-lg z-50 transform translate-x-full">
+        <div class="p-6 border-b">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-slate-800">Submitted Reports</h2>
+                <button id="close-sidebar-btn" class="text-2xl text-slate-500 hover:text-slate-800">&times;</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="generate-summary-btn"
+                    class="flex-1 bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-indigo-700 transition flex items-center justify-center gap-1">✨
+                    Generate Summary</button>
+                <button id="suggest-priorities-btn"
+                    class="flex-1 bg-teal-500 text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-teal-600 transition flex items-center justify-center gap-1">✨
+                    Suggest Priorities</button>
+            </div>
+        </div>
+        <div id="sidebar-ai-output-container" class="p-6 border-b bg-indigo-50 hidden">
+            <div id="sidebar-loader" class="text-center hidden">
+                <i class="fas fa-spinner fa-spin text-indigo-600 text-2xl"></i>
+                <p class="mt-2 text-slate-500">Thinking...</p>
+            </div>
+            <div id="sidebar-ai-output" class="prose max-w-none text-sm"></div>
+        </div>
+        <div class="p-6 overflow-y-auto h-[calc(100%-140px)]">
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Reporter</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Issue</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reports-table-body" class="divide-y divide-gray-200">
+                        <!-- Rows will be added dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Data Store
+            const initialReports = [
+                { name: 'John Doe', phone: '(555) 555-5555', title: 'Deep Pothole on 5th Ave', category: 'Pothole', status: 'Received' },
+                { name: 'Jane Smith', phone: '(555) 123-4567', title: 'Flickering Streetlight at Oak & Main', category: 'Streetlight', status: 'Received' },
+                { name: 'Carlos Ray', phone: '(555) 987-6543', title: 'Overflowing Trash Can in Central Park', category: 'Garbage', status: 'Received' }
+            ];
+            let allReports = [...initialReports];
+
+            // Element Refs
+            const issueImageInput = document.getElementById('issue-image-input');
+            const imagePreviewContainer = document.getElementById('image-preview-container');
+            const imagePreview = document.getElementById('image-preview');
+            const analyzeImageBtn = document.getElementById('analyze-image-btn');
+            const analyzeLoader = document.getElementById('analyze-loader');
+            const issueTitleInput = document.getElementById('issue-title');
+            const issueDescriptionTextarea = document.getElementById('issue-description');
+
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const navLinks = document.querySelectorAll('#mobile-menu a, #nav-links a');
+            const reportModal = document.getElementById('report-modal');
+            const reportBtns = document.querySelectorAll('#report-btn, #hero-report-btn, #cta-report-btn');
+            const closeModalBtn = document.getElementById('close-modal');
+            const reportsSidebar = document.getElementById('reports-sidebar');
+            const viewReportsBtn = document.getElementById('view-reports-btn');
+            const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+            const confirmationModal = document.getElementById('confirmation-modal');
+            const closeConfirmationBtn = document.getElementById('close-confirmation-modal');
+            const issueForm = document.getElementById('issue-form');
+            const reportsTableBody = document.getElementById('reports-table-body');
+            const generateSummaryBtn = document.getElementById('generate-summary-btn');
+            const suggestPrioritiesBtn = document.getElementById('suggest-priorities-btn');
+            const sidebarAiOutputContainer = document.getElementById('sidebar-ai-output-container');
+            const sidebarLoader = document.getElementById('sidebar-loader');
+            const sidebarAiOutput = document.getElementById('sidebar-ai-output');
+
+
+            // UI Handlers
+            mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+            navLinks.forEach(link => link.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+            const openModal = () => reportModal.classList.remove('hidden');
+            const closeModal = () => reportModal.classList.add('hidden');
+
+            reportBtns.forEach(btn => btn.addEventListener('click', openModal));
+            closeModalBtn.addEventListener('click', closeModal);
+            reportModal.addEventListener('click', (e) => { if (e.target === reportModal) closeModal(); });
+
+            viewReportsBtn.addEventListener('click', () => reportsSidebar.classList.remove('translate-x-full'));
+            closeSidebarBtn.addEventListener('click', () => reportsSidebar.classList.add('translate-x-full'));
+            closeConfirmationBtn.addEventListener('click', () => confirmationModal.classList.add('hidden'));
+
+            // Data Rendering
+            function renderReports() {
+                reportsTableBody.innerHTML = '';
+                allReports.forEach(report => {
+                    const newRow = `
+                        <tr>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">${report.name}</div>
+                                <div class="text-sm text-gray-500">${report.phone}</div>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">${report.title}</div>
+                                <div class="text-sm text-gray-500">${report.category}</div>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    ${report.status}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                    reportsTableBody.insertAdjacentHTML('beforeend', newRow);
+                });
+            }
+
+            // Form Submission
+            issueForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const userName = document.getElementById('user-name').value;
+                const userPhone = document.getElementById('user-phone').value;
+                const issueTitle = issueTitleInput.value;
+                const issueCategory = document.getElementById('issue-category').value;
+
+                document.getElementById('conf-user-name').textContent = userName;
+                document.getElementById('conf-user-phone').textContent = userPhone;
+                document.getElementById('conf-issue-title').textContent = issueTitle;
+                document.getElementById('conf-issue-category').textContent = issueCategory;
+
+                allReports.push({ name: userName, phone: userPhone, title: issueTitle, category: issueCategory, status: 'Received' });
+                renderReports();
+
+                issueForm.reset();
+                imagePreviewContainer.classList.add('hidden');
+                closeModal();
+                confirmationModal.classList.remove('hidden');
+            });
+
+            // Map Initialization
+            const map = L.map('leaflet-map').setView([40.7128, -74.0060], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            const issuesData = [
+                { lat: 40.7128, lng: -74.0060, title: 'Pothole on Wall St', category: 'Pothole', status: 'New' },
+                { lat: 40.7295, lng: -73.9965, title: 'Broken Streetlight', category: 'Streetlight', status: 'In Progress' },
+                { lat: 40.7050, lng: -74.0090, title: 'Graffiti at Battery Park', category: 'Graffiti', status: 'Resolved' },
+                { lat: 40.7580, lng: -73.9855, title: 'Garbage Overflow', category: 'Garbage', status: 'New' }
+            ];
+
+            issuesData.forEach(issue => {
+                const marker = L.marker([issue.lat, issue.lng]).addTo(map);
+                marker.bindPopup(`<b>${issue.title}</b><br>Category: ${issue.category}<br>Status: ${issue.status}`);
+            });
+
+            // Dashboard Charts
+            const timeframeFilter = document.getElementById('timeframeFilter');
+            const avgResponseTimeEl = document.getElementById('avgResponseTime');
+            const satisfactionRateEl = document.getElementById('satisfactionRate');
+
+            let issuesByCategoryChart, issueStatusChart, monthlyTrendsChart;
+
+            const allData = {
+                '30': { categories: { Pothole: 45, Streetlight: 30, Graffiti: 22, Garbage: 40, Parks: 15 }, statuses: { New: 28, 'In Progress': 54, Resolved: 70 }, trends: [10, 15, 12, 18, 25, 30, 42], trendLabels: ['W1', 'W2', 'W3', 'W4'], avgResponse: '28h', satisfaction: '94%' }, '90': { categories: { Pothole: 120, Streetlight: 95, Graffiti: 60, Garbage: 110, Parks: 55 }, statuses: { New: 60, 'In Progress': 150, Resolved: 230 }, trends: [80, 95, 110, 125, 100, 130], trendLabels: ['Mar', 'Apr', 'May'], avgResponse: '30h', satisfaction: '93%' }, '180': { categories: { Pothole: 250, Streetlight: 180, Graffiti: 110, Garbage: 210, Parks: 90 }, statuses: { New: 100, 'In Progress': 240, Resolved: 500 }, trends: [120, 135, 150, 160, 140, 180], trendLabels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], avgResponse: '32h', satisfaction: '92%' }
+            };
+            const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#475569' } } }, scales: { y: { beginAtZero: true, grid: { color: '#e2e8f0' }, ticks: { color: '#64748b' } }, x: { grid: { display: false }, ticks: { color: '#64748b' } } } };
+
+            function createCharts(period) {
+                const data = allData[period];
+                if (issuesByCategoryChart) { issuesByCategoryChart.destroy(); }
+                if (issueStatusChart) { issueStatusChart.destroy(); }
+                if (monthlyTrendsChart) { monthlyTrendsChart.destroy(); }
+
+                issuesByCategoryChart = new Chart(document.getElementById('issuesByCategoryChart').getContext('2d'), { type: 'bar', data: { labels: Object.keys(data.categories), datasets: [{ label: 'Number of Issues', data: Object.values(data.categories), backgroundColor: 'rgba(79, 70, 229, 0.7)', borderColor: 'rgba(79, 70, 229, 1)', borderWidth: 1, borderRadius: 4 }] }, options: chartOptions });
+                issueStatusChart = new Chart(document.getElementById('issueStatusChart').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(data.statuses), datasets: [{ data: Object.values(data.statuses), backgroundColor: ['#f59e0b', '#4f46e5', '#16a34a'], borderColor: '#fff', borderWidth: 2 }] }, options: { ...chartOptions, scales: {} } });
+                monthlyTrendsChart = new Chart(document.getElementById('monthlyTrendsChart').getContext('2d'), { type: 'line', data: { labels: data.trendLabels, datasets: [{ label: 'Issues Reported', data: data.trends, fill: true, backgroundColor: 'rgba(79, 70, 229, 0.1)', borderColor: 'rgba(79, 70, 229, 1)', tension: 0.3 }] }, options: chartOptions });
+            }
+
+            function updateDashboard(period) {
+                const data = allData[period];
+                createCharts(period);
+                avgResponseTimeEl.textContent = data.avgResponse;
+                satisfactionRateEl.textContent = data.satisfaction;
+            }
+            timeframeFilter.addEventListener('change', (e) => updateDashboard(e.target.value));
+
+            // Gemini API Integration
+            const apiKey = "";
+
+            async function callGeminiAPI(prompt, retries = 3, delay = 1000) {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                const payload = { contents: [{ parts: [{ text: prompt }] }] };
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        const result = await response.json();
+                        return result.candidates?.[0]?.content?.parts?.[0]?.text || "No response text found.";
+                    } catch (error) {
+                        if (i === retries - 1) { console.error("Gemini API call failed:", error); return `Error: Could not get a response. Details: ${error.message}`; }
+                        await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
+                    }
+                }
+            }
+
+            async function callGeminiVisionAPI(prompt, base64ImageData, mimeType) {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [{
+                        parts: [
+                            { text: prompt },
+                            { inlineData: { mimeType: mimeType, data: base64ImageData } }
+                        ]
+                    }]
+                };
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const result = await response.json();
+                    return result.candidates?.[0]?.content?.parts?.[0]?.text || "Failed to analyze image.";
+                } catch (error) {
+                    console.error("Gemini Vision API call failed:", error);
+                    return `Error: Could not get a response. Details: ${error.message}`;
+                }
+            }
+
+            document.getElementById('enhance-description-btn').addEventListener('click', async () => {
+                const userDescription = issueDescriptionTextarea.value;
+                if (!userDescription.trim()) { issueDescriptionTextarea.placeholder = "Please enter a description first."; return; }
+                document.getElementById('enhance-description-btn').classList.add('hidden');
+                document.getElementById('enhance-loader').classList.remove('hidden');
+                const prompt = `Rewrite and enhance the following civic issue report to be clear, concise, and professional for city officials. Ensure it includes key details. Keep it to a maximum of 3-4 sentences.\n\nUser's report: "${userDescription}"`;
+                issueDescriptionTextarea.value = await callGeminiAPI(prompt);
+                document.getElementById('enhance-loader').classList.add('hidden');
+                document.getElementById('enhance-description-btn').classList.remove('hidden');
+            });
+
+            document.getElementById('suggest-solutions-btn').addEventListener('click', async () => {
+                const category = document.getElementById('solution-category-select').value;
+                document.getElementById('solution-output-container').classList.remove('hidden');
+                document.getElementById('solution-loader').classList.remove('hidden');
+                document.getElementById('solution-output').innerHTML = '';
+                document.getElementById('suggest-solutions-btn').disabled = true;
+                const prompt = `As a civic innovation expert, suggest 2 creative and practical solutions for the urban problem of "${category}". For each solution, provide a title and a brief description. Format the response as simple HTML using <h4> for each title and <p> for its description.`;
+                document.getElementById('solution-output').innerHTML = await callGeminiAPI(prompt);
+                document.getElementById('solution-loader').classList.add('hidden');
+                document.getElementById('suggest-solutions-btn').disabled = false;
+            });
+
+            function getReportsText() {
+                if (allReports.length === 0) return null;
+                return allReports.map((report, i) => `${i + 1}. Reporter: ${report.name}. Issue: ${report.title} (${report.category}).`).join('\n');
+            }
+
+            generateSummaryBtn.addEventListener('click', async () => {
+                const reports = getReportsText();
+                sidebarAiOutput.innerHTML = '';
+                sidebarAiOutputContainer.classList.remove('hidden');
+                if (!reports) {
+                    sidebarAiOutput.innerHTML = `<p class="text-slate-500 text-center">No reports to summarize.</p>`;
+                    return;
+                }
+                sidebarLoader.classList.remove('hidden');
+                const prompt = `Act as a city manager's assistant. Summarize the following reports into a brief, actionable overview. Highlight recurring themes. Format as simple HTML with a <h4> title and a <p> for the summary.\n\nReports:\n${reports}`;
+                sidebarAiOutput.innerHTML = await callGeminiAPI(prompt);
+                sidebarLoader.classList.add('hidden');
+            });
+
+            suggestPrioritiesBtn.addEventListener('click', async () => {
+                const reports = getReportsText();
+                sidebarAiOutput.innerHTML = '';
+                sidebarAiOutputContainer.classList.remove('hidden');
+                if (!reports) {
+                    sidebarAiOutput.innerHTML = `<p class="text-slate-500 text-center">No reports to prioritize.</p>`;
+                    return;
+                }
+                sidebarLoader.classList.remove('hidden');
+                const prompt = `As an urban planner, analyze the following reports. Suggest a priority order for the top 3 most critical issues. For each, provide a brief justification considering public safety and community impact. Format as simple HTML with a <h4> title, and an ordered list <ol> with <li> items. Use <strong> for the issue title and <p> for the justification.\n\nReports:\n${reports}`;
+                sidebarAiOutput.innerHTML = await callGeminiAPI(prompt);
+                sidebarLoader.classList.add('hidden');
+            });
+
+            // Image Analysis Feature
+            issueImageInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imagePreview.src = e.target.result;
+                        imagePreviewContainer.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            analyzeImageBtn.addEventListener('click', async () => {
+                const base64Image = imagePreview.src;
+                if (!base64Image) return;
+
+                const parts = base64Image.split(',');
+                const mimeType = parts[0].match(/:(.*?);/)[1];
+                const base64Data = parts[1];
+
+                analyzeLoader.classList.remove('hidden');
+                analyzeImageBtn.classList.add('hidden');
+
+                const prompt = "Analyze this image of a civic issue. Identify the problem and describe it. Respond with ONLY a valid JSON object with two keys: 'title' (a short, descriptive title) and 'description' (a one or two-sentence explanation). Example: {\"title\": \"Cracked sidewalk\", \"description\": \"There is a large crack in the sidewalk posing a tripping hazard.\"}";
+
+                const responseText = await callGeminiVisionAPI(prompt, base64Data, mimeType);
+
+                try {
+                    const responseObject = JSON.parse(responseText);
+                    issueTitleInput.value = responseObject.title || '';
+                    issueDescriptionTextarea.value = responseObject.description || '';
+                } catch (e) {
+                    console.error("Failed to parse JSON from Vision API:", e);
+                    issueDescriptionTextarea.value = "AI analysis failed to produce a valid format. Please describe the issue manually. Raw response: " + responseText;
+                }
+
+                analyzeLoader.classList.add('hidden');
+                analyzeImageBtn.classList.remove('hidden');
+            });
+
+            // Initial Load
+            renderReports();
+            updateDashboard(timeframeFilter.value);
+        });
+    </script>
+</body>
+
+</html>
